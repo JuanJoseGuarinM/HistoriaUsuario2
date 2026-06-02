@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getCurrentSession, logout } from "@/services/authService";
 import type { Role, SessionUser } from "@/types/user";
 
 export function useAuthSession(options: { requiresAuth?: boolean; requiresAdmin?: boolean } = {}) {
@@ -14,23 +15,19 @@ export function useAuthSession(options: { requiresAuth?: boolean; requiresAdmin?
     let isMounted = true;
     async function checkSession() {
       try {
-        const res = await fetch("/api/auth/session");
-        if (!res.ok) {
-          throw new Error();
-        }
-        const data = await res.json();
+        const sessionUser = await getCurrentSession();
         
         if (isMounted) {
-          if (!data.user) {
+          if (!sessionUser) {
             setUser(null);
             if (requiresAuth) {
               router.replace("/login");
             }
-          } else if (requiresAdmin && data.user.role !== "admin") {
-            setUser(data.user);
+          } else if (requiresAdmin && sessionUser.role !== "admin") {
+            setUser(sessionUser);
             router.replace("/dashboard");
           } else {
-            setUser(data.user);
+            setUser(sessionUser);
           }
         }
       } catch {
@@ -60,7 +57,7 @@ export function useAuthSession(options: { requiresAuth?: boolean; requiresAdmin?
 
   async function clearSession() {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await logout();
     } catch {}
     setUser(null);
     setIsReady(true);

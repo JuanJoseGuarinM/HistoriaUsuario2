@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { register } from "@/services/authService";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,17 +21,9 @@ export default function RegisterPage() {
       setLoading(true);
       setError("");
 
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre, cc, email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "No fue posible crear la cuenta.");
-      }
+      const sessionUser = await register({ nombre, cc, email, password });
 
-      router.push(`/login?registered=1&email=${encodeURIComponent(data.user.email)}`);
+      router.push(`/login?registered=1&email=${encodeURIComponent(sessionUser.email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "No fue posible crear la cuenta.");
     } finally {

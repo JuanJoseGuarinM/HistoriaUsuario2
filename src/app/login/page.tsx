@@ -4,6 +4,7 @@ import { Suspense, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useRouter, useSearchParams } from "next/navigation";
+import { login } from "@/services/authService";
 
 function LoginForm() {
   const router = useRouter();
@@ -39,17 +40,8 @@ function LoginForm() {
       setLoading(true);
       setError("");
 
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.message || "Email o contraseña incorrectos.");
-      }
-
-      saveSession(data.user);
+      const sessionUser = await login({ email, password });
+      saveSession(sessionUser);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Email o contraseña incorrectos.");
