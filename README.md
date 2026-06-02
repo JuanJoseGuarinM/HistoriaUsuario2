@@ -20,9 +20,4 @@ Plataforma sencilla de gestión de miembros y control de acceso.
    npm run dev
    ```
 
-## Variables de Entorno (.env)
-- `DATABASE_URL`: Cadena de conexión de MongoDB.
-- `DATABASE_NAME`: Nombre de la base de datos.
-- `AUTH_SECRET`: Clave secreta para cookies de sesión.
-- `SMTP_USER`: Correo emisor para notificaciones.
-- `SMTP_PASSWORD`: Contraseña de aplicación del correo emisor.
+
