@@ -2,7 +2,6 @@
 
 import { Suspense, FormEvent, useEffect, useState } from "react";
 import Link from "next/link";
-import { login } from "@/services/authService";
 import { useAuthSession } from "@/hooks/useAuthSession";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -39,8 +38,18 @@ function LoginForm() {
     try {
       setLoading(true);
       setError("");
-      const sessionUser = await login({ email, password });
-      saveSession(sessionUser);
+
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Email o contraseña incorrectos.");
+      }
+
+      saveSession(data.user);
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Email o contraseña incorrectos.");

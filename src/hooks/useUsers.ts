@@ -1,12 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  createUser as createUserRequest,
-  deleteUser as deleteUserRequest,
-  getUsers,
-  updateUser as updateUserRequest
-} from "@/services/userService";
 import type { User, UserFormPayload } from "@/types/user";
 
 export function useUsers() {
@@ -18,30 +12,54 @@ export function useUsers() {
     try {
       setLoading(true);
       setError(null);
-      const data = await getUsers();
-      setUsers(data);
+      const res = await fetch("/api/users");
+      if (!res.ok) {
+        throw new Error("No fue posible cargar usuarios.");
+      }
+      const data = await res.json();
+      setUsers(data.users || []);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No fue posible cargar usuarios.");
+      setError(err instanceof Error ? err.message : "Error desconocido.");
     } finally {
       setLoading(false);
     }
   }
 
   async function createUser(payload: UserFormPayload) {
-    const created = await createUserRequest(payload);
-    setUsers((current) => [created, ...current]);
-    return created;
+    const res = await fetch("/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Error al crear usuario.");
+    }
+    setUsers((current) => [data.user, ...current]);
+    return data.user;
   }
 
   async function updateUser(id: string, payload: UserFormPayload) {
-    const updated = await updateUserRequest(id, payload);
-    setUsers((current) => current.map((user) => (user._id === id ? updated : user)));
-    return updated;
+    const res = await fetch(`/api/users/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.message || "Error al actualizar usuario.");
+    }
+    setUsers((current) => current.map((u) => (u._id === id ? data.user : u)));
+    return data.user;
   }
 
   async function deleteUser(id: string) {
-    await deleteUserRequest(id);
-    setUsers((current) => current.filter((user) => user._id !== id));
+    const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.message || "Error al eliminar usuario.");
+    }
+    setUsers((current) => current.filter((u) => u._id !== id));
   }
 
   useEffect(() => {

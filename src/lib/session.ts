@@ -1,10 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import type { NextResponse } from "next/server";
-import {
-  SESSION_COOKIE_NAME,
-  SESSION_MAX_AGE_SECONDS
-} from "@/lib/sessionConstants";
 import type { Role, SessionUser } from "@/types/user";
+
+const SESSION_COOKIE_NAME = "user-manager-session";
+const SESSION_MAX_AGE_SECONDS = 60 * 60 * 8;
 
 type SessionPayload = {
   exp: number;
